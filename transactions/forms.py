@@ -7,7 +7,7 @@ class SaleItemForm(forms.Form):
     This is the form for a single line item in a sale.
     We will use a FormSet to have multiple instances of this on one page.
     """
-    product = forms.ModelChoiceField(
+    product = forms.ModelChoiceField( 
         queryset=Product.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control product-select'})
     )
