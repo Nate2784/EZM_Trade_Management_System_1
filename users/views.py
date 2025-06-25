@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from store.models import StoreCashier
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, EditProfileForm, ChangePasswordForm

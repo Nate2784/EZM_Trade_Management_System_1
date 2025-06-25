@@ -1,29 +1,94 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h1>Products</h1>
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-{% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
-<a href="{% url 'product_create' %}" class="btn btn-primary mb-3">Add New Product</a>
-{% endif %}
+<style>
+    .product-card {
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 0.15rem 1rem rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-<div class="list-group">
-    {% for product in products %}
-    <div class="list-group-item">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ product.name }}</h5>
-            <small>${{ product.price }}</small>
-        </div>
-        <p class="mb-1">{{ product.description }}</p>
-        <small class="text-muted">Category: {{ product.category }}</small>
-        <div class="mt-2">
-            {% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
-            <a href="{% url 'product_update' product.pk %}" class="btn btn-secondary btn-sm">Edit</a>
-            {% endif %}
-            {% if request.user.role == 'head_manager' %}
-            <a href="{% url 'product_delete' product.pk %}" class="btn btn-danger btn-sm">Delete</a>
-            {% endif %}
-        </div>
+    .product-card:hover {
+        transform: scale(1.01);
+        box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08);
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #198754;
+    }
+
+    .product-category {
+        font-size: 0.85rem;
+    }
+
+    .product-controls .btn {
+        margin-right: 0.5rem;
+    }
+
+    .add-product-btn {
+        float: right;
+    }
+
+    @media (max-width: 576px) {
+        .add-product-btn {
+            float: none;
+            display: block;
+            margin-top: 1rem;
+        }
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Product Catalog</h2>
+        {% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
+        <a href="{% url 'product_create' %}" class="btn btn-primary add-product-btn">
+            <i class="bi bi-plus-circle"></i> Add New Product
+        </a>
+        {% endif %}
     </div>
-    {% endfor %}
+
+    {% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card product-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title mb-2">{{ product.name }}</h5>
+                        <span class="product-price">${{ product.price }}</span>
+                    </div>
+                    <p class="card-text text-muted mb-2">{{ product.description|truncatewords:20 }}</p>
+                    <span class="badge bg-light text-dark product-category mb-3">
+                        <i class="bi bi-tag"></i> {{ product.category }}
+                    </span>
+                    <div class="mt-auto product-controls">
+                        {% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
+                        <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        {% endif %}
+                        {% if request.user.role == 'head_manager' %}
+                        <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning mt-4" role="alert">
+        No products found.
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

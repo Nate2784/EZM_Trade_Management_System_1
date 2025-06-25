@@ -1,5 +1,70 @@
-venv/
-.env
+# Python
 __pycache__/
-db.sqlite3
-__pycache__
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.pipenv/
+pip-selfcheck.json
+
+# Django
+
+*.log
+media/
+staticfiles/
+static_root/
+local_settings.py
+
+# Environment variables & secrets
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Migrations (optional, if you want to ignore compiled migration files)
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+.coverage.*
+
+# Test output
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Other IDEs
+.idea/
+*.sublime-workspace
+*.sublime-project
