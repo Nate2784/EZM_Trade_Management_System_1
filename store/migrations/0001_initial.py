@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
                 ('location', models.CharField(max_length=255)),
-                ('owner', models.ForeignKey(limit_choices_to={'role': 'store_owner'}, on_delete=django.db.models.deletion.CASCADE, related_name='owned_stores', to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(limit_choices_to={'role': 'head_manager'}, on_delete=django.db.models.deletion.CASCADE, related_name='owned_stores', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(

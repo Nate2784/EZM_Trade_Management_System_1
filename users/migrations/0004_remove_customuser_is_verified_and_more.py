@@ -30,6 +30,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customuser',
             name='role',
-            field=models.CharField(choices=[('admin', 'Admin'), ('store_owner', 'Store Owner'), ('store_manager', 'Store Manager'), ('cashier', 'Cashier')], max_length=20),
+            field=models.CharField(choices=[('admin', 'Admin'), ('head_manager', 'Head Manager'), ('store_manager', 'Store Manager'), ('cashier', 'Cashier')], max_length=20),
         ),
     ]

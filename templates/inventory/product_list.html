@@ -2,7 +2,7 @@
 {% block content %}
 <h1>Products</h1>
 
-{% if request.user.role == 'store_owner' or request.user.role == 'store_manager' %}
+{% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
 <a href="{% url 'product_create' %}" class="btn btn-primary mb-3">Add New Product</a>
 {% endif %}
 
@@ -16,10 +16,10 @@
         <p class="mb-1">{{ product.description }}</p>
         <small class="text-muted">Category: {{ product.category }}</small>
         <div class="mt-2">
-            {% if request.user.role == 'store_owner' or request.user.role == 'store_manager' %}
+            {% if request.user.role == 'head_manager' or request.user.role == 'store_manager' %}
             <a href="{% url 'product_update' product.pk %}" class="btn btn-secondary btn-sm">Edit</a>
             {% endif %}
-            {% if request.user.role == 'store_owner' %}
+            {% if request.user.role == 'head_manager' %}
             <a href="{% url 'product_delete' product.pk %}" class="btn btn-danger btn-sm">Delete</a>
             {% endif %}
         </div>

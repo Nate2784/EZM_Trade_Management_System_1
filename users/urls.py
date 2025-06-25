@@ -1,6 +1,6 @@
 # users/urls.py
 from django.urls import path
-from .views import *
+from .views import login_view, logout_view, admin_dashboard, store_manager_page, cashier_page, head_manager_page, manage_users, toggle_user_status, change_user_role, view_user_detail, create_user, admin_settings, admin_edit_profile, admin_change_password, head_manager_settings, store_manager_settings, cashier_settings
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -15,8 +15,13 @@ urlpatterns = [
 
     # Role-based pages
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
-    path('store-owner/', store_owner_page, name='store_owner_page'),
+    path('head-manager/', head_manager_page, name='head_manager_page'),
     path('store-manager/', store_manager_page, name='store_manager_page'),
     path('cashier/', cashier_page, name='cashier_page'),
-    path('change_password/', change_password, name='change_password'),
+    path('admin/settings/', admin_settings, name='admin_settings'),
+    path('admin/profile/edit/', admin_edit_profile, name='admin_edit_profile'),
+    path('admin/profile/change-password/', admin_change_password, name='admin_change_password'),
+    path('head-manager/settings/', head_manager_settings, name='head_manager_settings'),
+    path('store-manager/settings/', store_manager_settings, name='store_manager_settings'),
+    path('cashier/settings/', cashier_settings, name='cashier_settings'),
 ]

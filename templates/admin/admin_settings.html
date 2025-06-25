@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h1>Admin Settings</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <a href="{% url 'admin_edit_profile' %}" class="btn btn-primary">
+                    📝 Edit Profile Information
+                </a>
+            </h5>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <a href="{% url 'admin_change_password' %}" class="btn btn-primary">
+                    🔐 Change Password
+                </a>
+            </h5>
+        </div>
+    </div>
+</div>
+{% endblock %}
