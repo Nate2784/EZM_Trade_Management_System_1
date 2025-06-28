@@ -6,6 +6,18 @@
 <a href="{% url 'stock_create' %}" class="btn btn-primary mb-3">Add New Stock Item</a>
 {% endif %}
 
+{% if low_stock_alerts %}
+  <div class="alert alert-warning" role="alert">
+    <strong> Low Stock Alert!</strong>
+    <ul>
+      {% for stock in low_stock_alerts %}
+        <li>{{ stock.product.name }} ({{ stock.quantity }}) is below the threshold ({{ stock.low_stock_threshold }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+
 <table class="table table-striped">
     <thead>
         <tr>

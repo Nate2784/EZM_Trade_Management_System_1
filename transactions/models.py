@@ -13,6 +13,12 @@ class Transaction(models.Model):
         ('transfer', 'Transfer'),
         ('refund', 'Refund'),
     ]
+    PAYMENT_TYPE_CHOICES = [
+        ('cash', 'Cash'),
+        ('mobile', 'Mobile Money'),
+        ('bank', 'Bank Transfer'),
+       
+    ]
     # Use strings 'app_name.ModelName' to define relationships to other apps.
     # product = models.ForeignKey('Inventory.Product', on_delete=models.CASCADE) # Remove this line
     quantity = models.IntegerField(help_text="Quantity of product involved. Can be negative for sales.")
@@ -20,13 +26,14 @@ class Transaction(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     store = models.ForeignKey('store.Store', on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # Add this line
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, default='cash')
 
     def __str__(self):
         # We use try-except blocks to avoid errors if related objects don't exist yet
         try:
             # product_name = self.product.name # Remove this line
             store_name = self.store.name
-            return f'{self.transaction_type} of {self.quantity} at {store_name}' # Update this line
+            return f'{self.transaction_type} of {self.quantity} at {store_name} via {self.payment_type}' # Update this line
         except (AttributeError,):
             return f'Transaction ID: {self.id}'
 
