@@ -9,7 +9,8 @@
     <h1>Receipt</h1>
     <p>Order ID: {{ order.id }}</p>
     <p>Date: {{ order.created_at }}</p>
-    <p>Customer: {{ order.customer.username }}</p>
+    <p>Payment Type: {{ payment_type }}</p>
+
 
     <h2>Order Items</h2>
     <ul>
@@ -22,7 +23,7 @@
     <p>Tax: {{ tax }}</p>
     <p>Discount: {{ discount }}</p>
     <p>Total: {{ total }}</p>
-    <p>Payment Type: {{ payment_type }}</p>
+ 
 </body>
 
 </html>

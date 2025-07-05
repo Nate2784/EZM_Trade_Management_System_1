@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}Cashier Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">Cashier Dashboard</h2>
+          <p class="text-muted mb-0">Welcome, {{ request.user.first_name }}! | Store: {{ store.name }}</p>
+        </div>
+        <div>
+          <a href="{% url 'initiate_order' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>New Order
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Today's Sales</h6>
+              <h4 class="mb-0">{{ recent_transactions|length }}</h4>
+            </div>
+            <div class="align-self-center">
+              <i class="bi bi-cash-stack fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Available Products</h6>
+              <h4 class="mb-0">{{ available_products|length }}</h4>
+            </div>
+            <div class="align-self-center">
+              <i class="bi bi-box-seam fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Pending Orders</h6>
+              <h4 class="mb-0">{{ pending_orders|length }}</h4>
+            </div>
+            <div class="align-self-center">
+              <i class="bi bi-clock-history fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Store Status</h6>
+              <h6 class="mb-0">Active</h6>
+            </div>
+            <div class="align-self-center">
+              <i class="bi bi-check-circle fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row">
+    <!-- Recent Transactions -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Transactions</h5>
+          <small class="text-muted">Last 10 sales</small>
+        </div>
+        <div class="card-body">
+          {% if recent_transactions %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date & Time</th>
+                  <th>Amount</th>
+                  <th>Payment</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in recent_transactions %}
+                <tr>
+                  <td><span class="badge bg-secondary">#{{ transaction.id }}</span></td>
+                  <td>{{ transaction.timestamp|date:"M d, Y H:i" }}</td>
+                  <td><strong>${{ transaction.total_amount }}</strong></td>
+                  <td>
+                    <span class="badge bg-{% if transaction.payment_type == 'cash' %}success{% elif transaction.payment_type == 'mobile' %}info{% else %}primary{% endif %}">
+                      {{ transaction.get_payment_type_display }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if transaction.receipt %}
+                    <a href="{% url 'view_receipt' transaction.receipt.id %}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-receipt"></i>
+                    </a>
+                    <a href="{% url 'generate_receipt_pdf' transaction.receipt.id %}" class="btn btn-sm btn-outline-secondary">
+                      <i class="bi bi-download"></i>
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-receipt fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No transactions yet today</p>
+            <a href="{% url 'initiate_order' %}" class="btn btn-primary">Create First Sale</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Info -->
+    <div class="col-lg-4">
+      <!-- Quick Actions -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'initiate_order' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-2"></i>New Order
+            </a>
+            <!-- <a href="{% url 'process_sale' %}" class="btn btn-outline-primary">
+              <i class="bi bi-calculator me-2"></i>Legacy POS
+            </a> -->
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+              <i class="bi bi-printer me-2"></i>Print Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Alert -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Stock Status</h5>
+        </div>
+        <div class="card-body">
+          {% if available_products %}
+          <div class="list-group list-group-flush">
+            {% for stock in available_products|slice:":5" %}
+            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <div>
+                <h6 class="mb-1">{{ stock.product.name }}</h6>
+                <small class="text-muted">${{ stock.selling_price }}</small>
+              </div>
+              <span class="badge bg-{% if stock.quantity < stock.low_stock_threshold %}danger{% elif stock.quantity < 20 %}warning{% else %}success{% endif %} rounded-pill">
+                {{ stock.quantity }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center">No products available</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+.transition {
+  transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

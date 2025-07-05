@@ -32,7 +32,8 @@ class ObjectManagerRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         user = self.request.user
         if user.role == 'head_manager':
-            return True  # Store owner can edit any stock
+            return True  # Head manager can edit any stock
+
         
         obj = self.get_object() # Gets the Stock instance
         
@@ -88,7 +89,7 @@ class StockListView(LoginRequiredMixin, ListView):
             # --- CORRECTED LOGIC ---
             # We now get the store from the manager's assignment object: user.managed_store.store
             if hasattr(user, 'managed_store'):
-                return Stock.objects.filter(store=user.managed_store.store).select_related('product', 'store')
+                return Stock.objects.filter(store=user.managed_store).select_related('product', 'store')
         
         elif user.role == 'cashier':
             # --- CORRECTED LOGIC ---
@@ -98,6 +99,18 @@ class StockListView(LoginRequiredMixin, ListView):
         
         # Return an empty list if the user has no role or assigned store
         return Stock.objects.none()
+    
+    # Low stock alerts
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        low_stock_items = self.get_queryset().filter(quantity__lt=models.F('low_stock_threshold'))
+
+        if self.request.user.role == 'store_manager':
+            context['low_stock_alerts'] = low_stock_items
+            if low_stock_items.exists():
+                messages.warning(self.request, f" You have {low_stock_items.count()} product(s) below the low stock threshold!")
+
+        return context
 
 class StockCreateView(LoginRequiredMixin, ManagerOnlyMixin, CreateView):
     model = Stock

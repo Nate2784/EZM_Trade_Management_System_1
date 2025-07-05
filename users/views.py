@@ -60,17 +60,25 @@ from django.urls import reverse_lazy
 def login_view(request):
     if request.user.is_authenticated:
         user = request.user
-        if user.is_superuser or user.role == 'admin':
-            return redirect('admin_dashboard')
-        elif user.role == 'head_manager':
-            return redirect('head_manager_page')
-        elif user.role == 'store_manager':
-            return redirect('store_manager_page')
-        elif user.role == 'cashier':
-            return redirect('cashier_page')
-        else:
-            messages.warning(request, "No role assigned. Contact admin.")
-            return redirect('login')
+        if getattr(user, 'is_verified', False):
+            # Verified users go to their dashboard pages
+            if user.is_superuser or user.role == 'admin':
+                return redirect('admin_dashboard')
+            elif user.role == 'head_manager':
+                return redirect('head_manager_page')
+            elif user.role == 'store_manager':
+                return redirect('store_manager_page')
+         
+            elif user.role == 'cashier':
+                if user.store:
+                    return redirect('cashier_dashboard')
+                else:
+                    return redirect('cashier_page')
+            else:
+                messages.warning(request, "No role assigned. Contact admin.")
+                return redirect('login')
+
+
 
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
@@ -83,14 +91,29 @@ def login_view(request):
 
             login(request, user)
             if user.is_first_login:
-                if user.role == 'admin':
-                    return redirect('admin_change_password')
-                elif user.role == 'head_manager':
+                return redirect('change_password')
+            elif user.role == 'admin':
+                    return redirect('admin_dashboard')
+            elif user.role == 'head_manager':
                     return redirect('head_manager_settings')
-                elif user.role == 'store_manager':
-                    return redirect('store_manager_settings')
-                elif user.role == 'cashier':
-                    return redirect('cashier_settings')
+
+            elif user.role == 'store_manager':
+                try:
+                    store = Store.objects.get(store_manager=user)
+                    return redirect('store_manager_page')
+                except Store.DoesNotExist:
+                    messages.warning(request, "You are not assigned to manage any store.")
+                    return redirect('login')
+            elif user.role == 'cashier':
+                # Check if cashier is assigned to a store
+                if user.store:
+                    return redirect('cashier_dashboard')
+                else:
+                    messages.warning(request, "You are not assigned to any store. Contact your manager.")
+                    return redirect('login')
+
+                
+
             else:
                 if user.role == 'admin':
                     return redirect('admin_dashboard')
@@ -121,6 +144,20 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+# Custom CSRF failure view
+from django.views.decorators.csrf import requires_csrf_token
+from django.template import RequestContext
+from django.http import HttpResponseForbidden
+
+@requires_csrf_token
+def csrf_failure(request, reason=""):
+    """
+    Custom CSRF failure view that redirects to login with an error message
+    """
+    messages.error(request, "Your session has expired. Please log in again.")
+    return redirect('login')
+
+from django.shortcuts import render
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -174,9 +211,23 @@ from transactions.models import Transaction
 
 @login_required
 def cashier_page(request):
-    orders = Order.objects.filter(customer=request.user).order_by('-created_at')[:10]
-    transactions = [order.transaction for order in orders if order.transaction]
-    return render(request, 'mainpages/cashier_page.html', {'transactions': transactions})
+    # Check if user is a cashier
+    if request.user.role != 'cashier':
+        messages.error(request, "Access denied. Cashier role required.")
+        return redirect('login')
+
+    # Get transactions for this cashier's store if assigned
+    transactions = []
+    if request.user.store:
+        transactions = Transaction.objects.filter(
+            store=request.user.store,
+            transaction_type='sale'
+        ).order_by('-timestamp')[:10]
+
+    return render(request, 'mainpages/cashier_page.html', {
+        'transactions': transactions,
+        'has_store': bool(request.user.store)
+    })
 
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q

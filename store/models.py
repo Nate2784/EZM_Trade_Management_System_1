@@ -6,7 +6,7 @@ class Store(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, default='')
-    store_manager = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_stores')
+    store_manager = models.OneToOneField(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_store')
 
     def __str__(self):
         return self.name
