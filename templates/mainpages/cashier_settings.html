@@ -1,7 +1,89 @@
 {% extends 'base.html' %}
 {% block title %}Cashier Settings{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Cashier Settings</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-user-cog"></i> Cashier Settings</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.is_first_login %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Welcome!</strong> This is your first login. Please update your password and profile
+                        information for security.
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <!-- Profile Management -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-edit fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Edit Profile</h5>
+                                    <p class="card-text">Update your personal information and contact details.</p>
+                                    <a href="{% url 'cashier_edit_profile' %}" class="btn btn-primary">
+                                        <i class="fas fa-edit"></i> Edit Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Management -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-key fa-3x text-warning mb-3"></i>
+                                    <h5 class="card-title">Change Password</h5>
+                                    <p class="card-text">Update your password for better security.</p>
+                                    <a href="{% url 'cashier_change_password' %}" class="btn btn-warning">
+                                        <i class="fas fa-lock"></i> Change Password
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> Account Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Username:</strong> {{ user.username }}</p>
+                                    <p><strong>Email:</strong> {{ user.email }}</p>
+                                    <p><strong>Role:</strong> <span class="badge bg-info">{{ user.get_role_display
+                                            }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>First Name:</strong> {{ user.first_name|default:"Not set" }}</p>
+                                    <p><strong>Last Name:</strong> {{ user.last_name|default:"Not set" }}</p>
+                                    <p><strong>Account Status:</strong>
+                                        {% if user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'cashier_page' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

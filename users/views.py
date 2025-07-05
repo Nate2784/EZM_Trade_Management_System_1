@@ -419,7 +419,56 @@ def store_manager_settings(request):
 
 @login_required
 def cashier_settings(request):
+    # Mark user as no longer first login after visiting settings
+    if request.user.is_first_login:
+        request.user.is_first_login = False
+        request.user.save()
+        messages.info(request, "Welcome! Please update your password and profile information.")
+
     return render(request, 'mainpages/cashier_settings.html')
+
+
+@login_required
+def cashier_edit_profile(request):
+    if request.user.role != 'cashier':
+        messages.warning(request, "Access denied. You don't have permission to access this page.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('cashier_settings')
+        else:
+            messages.error(request, 'Error updating profile.')
+    else:
+        form = EditProfileForm(instance=request.user)
+    return render(request, 'users/edit_profile.html', {'form': form})
+
+
+@login_required
+def cashier_change_password(request):
+    if request.user.role != 'cashier':
+        messages.warning(request, "Access denied. You don't have permission to access this page.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            old_password = form.cleaned_data['old_password']
+            new_password1 = form.cleaned_data['new_password1']
+            if request.user.check_password(old_password):
+                request.user.set_password(new_password1)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                messages.success(request, 'Password changed successfully!')
+                return redirect('cashier_settings')
+            else:
+                messages.error(request, 'Incorrect old password.')
+    else:
+        form = ChangePasswordForm()
+    return render(request, 'users/change_password.html', {'form': form})
 
 
 class CustomPasswordChangeView(PasswordChangeView):

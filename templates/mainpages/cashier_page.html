@@ -3,129 +3,112 @@
 
 {% block content %}
 <div class="container mt-5">
-  <div class="row">
+  <!-- Welcome Header -->
+  <div class="row mb-4">
     <div class="col-12">
-      {% if has_store %}
-      <div class="alert alert-info">
-        <h4 class="alert-heading">Welcome Cashier {{ request.user.first_name }}!</h4>
-        <p>You now have access to our enhanced order management system.</p>
-        <p><strong>Assigned Store:</strong> {{ request.user.store.name }}</p>
-        <hr>
-        <div class="d-flex gap-2">
-          <a href="{% url 'cashier_dashboard' %}" class="btn btn-primary">
-            <i class="bi bi-speedometer2 me-2"></i>New Dashboard
-          </a>
-          <a href="{% url 'initiate_order' %}" class="btn btn-success">
-            <i class="bi bi-plus-circle me-2"></i>Create Order
-          </a>
-          <a href="{% url 'process_sale' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-calculator me-2"></i>Legacy POS
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Welcome, {{ request.user.first_name|default:request.user.username }}!</h2>
+              <p class="mb-0">Cashier Dashboard - Process sales and manage transactions</p>
+            </div>
+            <div>
+              <i class="fas fa-cash-register fa-3x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card h-100 text-center">
+        <div class="card-body">
+          <i class="fas fa-shopping-cart fa-3x text-success mb-3"></i>
+          <h5 class="card-title">Process Sale</h5>
+          <p class="card-text">Create new orders and process customer transactions.</p>
+          <a href="{% url 'process_sale' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> New Sale
           </a>
         </div>
       </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 text-center">
+        <div class="card-body">
+          <i class="fas fa-undo fa-3x text-warning mb-3"></i>
+          <h5 class="card-title">Process Refund</h5>
+          <p class="card-text">Handle customer returns and refund requests.</p>
+          <a href="#" class="btn btn-warning">
+            <i class="fas fa-undo"></i> Process Refund
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 text-center">
+        <div class="card-body">
+          <i class="fas fa-cog fa-3x text-info mb-3"></i>
+          <h5 class="card-title">Settings</h5>
+          <p class="card-text">Update your profile and account settings.</p>
+          <a href="{% url 'cashier_settings' %}" class="btn btn-info">
+            <i class="fas fa-cog"></i> Settings
+          </a>
+ 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-history"></i> Recent Sales Transactions</h5>
+    </div>
+    <div class="card-body">
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Transaction ID</th>
+              <th>Date & Time</th>
+              <th>Total Amount</th>
+              <th>Payment Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td><strong>#{{ transaction.id }}</strong></td>
+              <td>{{ transaction.timestamp|date:"M d, Y H:i" }}</td>
+              <td><strong>${{ transaction.total_amount }}</strong></td>
+              <td>
+                <span class="badge bg-info">{{ transaction.payment_type|title }}</span>
+              </td>
+              <td>
+                <span class="badge bg-success">Completed</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-      <div class="alert alert-warning">
-        <h4 class="alert-heading">Welcome Cashier {{ request.user.first_name }}!</h4>
-        <p>You are not currently assigned to any store.</p>
-        <p>Please contact your store manager or administrator to get assigned to a store before you can start processing orders. </p>
-        <hr>
-        <p class="mb-0">
-          <i class="bi bi-info-circle me-2"></i>
-          Once assigned, you'll have access to our enhanced order management system.
-        </p>
+      <div class="text-center py-5">
+        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+        <h4>No transactions yet</h4>
+        <p class="text-muted">Start processing sales to see transaction history here.</p>
+        <a href="{% url 'process_sale' %}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Process First Sale
+        </a>
       </div>
       {% endif %}
     </div>
   </div>
-
-  {% if has_store %}
-  <div class="row">
-    <div class="col-lg-8">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Recent Transactions</h5>
-        </div>
-        <div class="card-body">
-          {% if transactions %}
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Transaction ID</th>
-                  <th>Date</th>
-                  <th>Total Amount</th>
-                  <th>Payment Type</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for transaction in transactions %}
-                <tr>
-                  <td><span class="badge bg-secondary">#{{ transaction.id }}</span></td>
-                  <td>{{ transaction.timestamp|date:"Y-m-d H:i" }}</td>
-                  <td><strong>${{ transaction.total_amount }}</strong></td>
-                  <td>
-                    <span class="badge bg-{% if transaction.payment_type == 'cash' %}success{% elif transaction.payment_type == 'mobile' %}info{% else %}primary{% endif %}">
-                      {{ transaction.get_payment_type_display }}
-                    </span>
-                  </td>
-                  <td>
-                    {% if transaction.receipt %}
-                    <a href="{% url 'view_receipt' transaction.receipt.id %}" class="btn btn-sm btn-outline-primary">
-                      <i class="bi bi-receipt"></i>
-                    </a>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="text-center py-4">
-            <i class="bi bi-receipt fs-1 text-muted"></i>
-            <p class="text-muted mt-2">No transactions yet</p>
-            <a href="{% url 'initiate_order' %}" class="btn btn-primary">Create First Sale</a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Quick Actions</h5>
-        </div>
-        <div class="card-body">
-          <div class="d-grid gap-2">
-            <a href="{% url 'cashier_dashboard' %}" class="btn btn-primary">
-              <i class="bi bi-speedometer2 me-2"></i>Enhanced Dashboard
-            </a>
-            <a href="{% url 'initiate_order' %}" class="btn btn-success">
-              <i class="bi bi-plus-circle me-2"></i>New Order
-            </a>
-            <a href="{% url 'process_sale' %}" class="btn btn-outline-primary">
-              <i class="bi bi-calculator me-2"></i>Legacy POS
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body text-center py-5">
-          <i class="bi bi-shop fs-1 text-muted mb-3"></i>
-          <h4>No Store Assignment</h4>
-          <p class="text-muted">You need to be assigned to a store before you can access cashier functions.</p>
-          <p class="text-muted">Please contact your store manager or system administrator.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}
