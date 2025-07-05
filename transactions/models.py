@@ -64,6 +64,16 @@ class Receipt(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    # Customer information
+    customer_name = models.CharField(max_length=100, default='Walk-in Customer', blank=True)
+    customer_phone = models.CharField(max_length=20, blank=True, null=True)
+
+    # Price breakdown
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     def __str__(self):
         return f'Receipt for transaction {self.transaction.id}'
 
@@ -82,11 +92,12 @@ class Order(models.Model):
         blank=True
     )
     # This must be a string to avoid the circular import with the 'inventory' app.
-    # product = models.ForeignKey('Inventory.Product', on_delete=models.CASCADE, related_name='transaction_orders') # Remove this line
+    product = models.ForeignKey('Inventory.Product', on_delete=models.CASCADE, related_name='transaction_orders', null=True, blank=True)
     quantity = models.PositiveIntegerField()
     price_at_time_of_sale = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='orders', null=True, blank=True) # Add this line
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
 
     def __str__(self):
         receipt_id = self.receipt.id if self.receipt else "unassigned"
-        return f'{self.quantity} of {self.product.name} for receipt {receipt_id}'
+        product_name = self.product.name if self.product else "Unknown Product"
+        return f'{self.quantity} of {product_name} for receipt {receipt_id}'

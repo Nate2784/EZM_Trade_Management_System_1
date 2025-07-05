@@ -67,7 +67,10 @@ def login_view(request):
             elif user.role == 'store_manager':
                 return redirect('store_manager_page')
             elif user.role == 'cashier':
-                return redirect('cashier_page')
+                if user.store:
+                    return redirect('cashier_dashboard')
+                else:
+                    return redirect('cashier_page')
             else:
                 messages.warning(request, "No role assigned. Contact admin.")
                 return redirect('login')
@@ -98,7 +101,12 @@ def login_view(request):
                     messages.warning(request, "You are not assigned to manage any store.")
                     return redirect('login')
             elif user.role == 'cashier':
-                return redirect('cashier_page')
+                # Check if cashier is assigned to a store
+                if user.store:
+                    return redirect('cashier_dashboard')
+                else:
+                    messages.warning(request, "You are not assigned to any store. Contact your manager.")
+                    return redirect('login')
             else:
                 messages.warning(request, "No role assigned. Contact admin.")
                 return redirect('login')
@@ -113,6 +121,19 @@ from django.contrib.auth import logout
 
 def logout_view(request):
     logout(request)
+    return redirect('login')
+
+# Custom CSRF failure view
+from django.views.decorators.csrf import requires_csrf_token
+from django.template import RequestContext
+from django.http import HttpResponseForbidden
+
+@requires_csrf_token
+def csrf_failure(request, reason=""):
+    """
+    Custom CSRF failure view that redirects to login with an error message
+    """
+    messages.error(request, "Your session has expired. Please log in again.")
     return redirect('login')
 
 from django.shortcuts import render
@@ -187,9 +208,23 @@ from transactions.models import Transaction
 
 @login_required
 def cashier_page(request):
-    orders = Order.objects.filter(customer=request.user).order_by('-created_at')[:10]
-    transactions = [order.transaction for order in orders if order.transaction]
-    return render(request, 'mainpages/cashier_page.html', {'transactions': transactions})
+    # Check if user is a cashier
+    if request.user.role != 'cashier':
+        messages.error(request, "Access denied. Cashier role required.")
+        return redirect('login')
+
+    # Get transactions for this cashier's store if assigned
+    transactions = []
+    if request.user.store:
+        transactions = Transaction.objects.filter(
+            store=request.user.store,
+            transaction_type='sale'
+        ).order_by('-timestamp')[:10]
+
+    return render(request, 'mainpages/cashier_page.html', {
+        'transactions': transactions,
+        'has_store': bool(request.user.store)
+    })
 
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
