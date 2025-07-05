@@ -1,12 +1,130 @@
 {% extends 'base.html' %}
-{% block title %}Assign Cashier{% endblock %}
+{% load widget_tweaks %}
+{% block title %}Assign Cashier - {{ store.name }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h3 class="mb-4">Assign Cashier for {{ store.name }}</h3>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Assign</button>
-  </form>
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">Assign Cashier</h2>
+          <p class="text-muted mb-0">Store: {{ store.name }}</p>
+        </div>
+        <div>
+          <a href="{% url 'store_manager_page' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Assignment Form -->
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Assign New Cashier</h5>
+        </div>
+        <div class="card-body">
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="{{ form.cashier.id_for_label }}" class="form-label">{{ form.cashier.label }}</label>
+              {{ form.cashier|add_class:"form-select" }}
+              {% if form.cashier.help_text %}
+              <div class="form-text">{{ form.cashier.help_text }}</div>
+              {% endif %}
+              {% if form.cashier.errors %}
+              <div class="text-danger small mt-1">{{ form.cashier.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Assign Cashier
+              </button>
+              <a href="{% url 'store_manager_page' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+
+          {% if not form.cashier.queryset %}
+          <div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>No available cashiers found.</strong><br>
+            All cashiers are either already assigned to stores or inactive. Contact your administrator to create new cashier accounts.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Currently Assigned Cashiers -->
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Currently Assigned Cashiers</h5>
+        </div>
+        <div class="card-body">
+          {% if assigned_cashiers %}
+          <div class="list-group list-group-flush">
+            {% for cashier in assigned_cashiers %}
+            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <div>
+                <h6 class="mb-1">{{ cashier.get_full_name|default:cashier.username }}</h6>
+                <small class="text-muted">{{ cashier.email }}</small>
+              </div>
+              <div>
+                <span class="badge bg-success me-2">Active</span>
+                <a href="{% url 'remove_cashier' cashier.id %}"
+                   class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Are you sure you want to remove {{ cashier.get_full_name|default:cashier.username }} from this store?')">
+                  <i class="bi bi-person-dash"></i>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-person-plus fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No cashiers assigned yet</p>
+            <p class="text-muted small">Assign your first cashier using the form on the left</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Section -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card bg-light">
+        <div class="card-body">
+          <h6 class="card-title">
+            <i class="bi bi-question-circle me-2"></i>How to assign cashiers
+          </h6>
+          <ul class="mb-0 small">
+            <li>Only unassigned cashier accounts will appear in the dropdown</li>
+            <li>Once assigned, cashiers can log in and access the POS system for your store</li>
+            <li>You can remove cashiers at any time, which will unassign them from your store</li>
+            <li>If you don't see any available cashiers, contact your administrator to create new accounts</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

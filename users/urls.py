@@ -5,6 +5,7 @@ from .views import login_view, logout_view, admin_dashboard, store_manager_page,
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('csrf-failure/', csrf_failure, name='csrf_failure'),
 
     #admin
      path('admin/manage-users/', manage_users, name='manage_users'),

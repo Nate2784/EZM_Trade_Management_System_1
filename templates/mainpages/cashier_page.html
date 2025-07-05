@@ -1,31 +1,131 @@
 {% extends 'base.html' %}
 {% block title %}Cashier Dashboard{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
-  <h2>Welcome Cashier {{ request.user.first_name }}!</h2>
-  <p>Create orders, view products, and process refunds.</p>
-  <a href="{% url 'process_sale' %}" class="btn btn-primary">Process Sale</a>
+  <div class="row">
+    <div class="col-12">
+      {% if has_store %}
+      <div class="alert alert-info">
+        <h4 class="alert-heading">Welcome Cashier {{ request.user.first_name }}!</h4>
+        <p>You now have access to our enhanced order management system.</p>
+        <p><strong>Assigned Store:</strong> {{ request.user.store.name }}</p>
+        <hr>
+        <div class="d-flex gap-2">
+          <a href="{% url 'cashier_dashboard' %}" class="btn btn-primary">
+            <i class="bi bi-speedometer2 me-2"></i>New Dashboard
+          </a>
+          <a href="{% url 'initiate_order' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Create Order
+          </a>
+          <a href="{% url 'process_sale' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-calculator me-2"></i>Legacy POS
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <div class="alert alert-warning">
+        <h4 class="alert-heading">Welcome Cashier {{ request.user.first_name }}!</h4>
+        <p>You are not currently assigned to any store.</p>
+        <p>Please contact your store manager or administrator to get assigned to a store before you can start processing orders. </p>
+        <hr>
+        <p class="mb-0">
+          <i class="bi bi-info-circle me-2"></i>
+          Once assigned, you'll have access to our enhanced order management system.
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 
-  <h3 class="mt-4">Previous Sales Transactions</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Transaction ID</th>
-        <th>Date</th>
-        <th>Total Amount</th>
-        <th>Payment Type</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for transaction in transactions %}
-      <tr>
-        <td>{{ transaction.id }}</td>
-        <td>{{ transaction.timestamp }}</td>
-        <td>{{ transaction.total_amount }}</td>
-        <td>{{ transaction.payment_type }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  {% if has_store %}
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Transactions</h5>
+        </div>
+        <div class="card-body">
+          {% if transactions %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Date</th>
+                  <th>Total Amount</th>
+                  <th>Payment Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                  <td><span class="badge bg-secondary">#{{ transaction.id }}</span></td>
+                  <td>{{ transaction.timestamp|date:"Y-m-d H:i" }}</td>
+                  <td><strong>${{ transaction.total_amount }}</strong></td>
+                  <td>
+                    <span class="badge bg-{% if transaction.payment_type == 'cash' %}success{% elif transaction.payment_type == 'mobile' %}info{% else %}primary{% endif %}">
+                      {{ transaction.get_payment_type_display }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if transaction.receipt %}
+                    <a href="{% url 'view_receipt' transaction.receipt.id %}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-receipt"></i>
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-receipt fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No transactions yet</p>
+            <a href="{% url 'initiate_order' %}" class="btn btn-primary">Create First Sale</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'cashier_dashboard' %}" class="btn btn-primary">
+              <i class="bi bi-speedometer2 me-2"></i>Enhanced Dashboard
+            </a>
+            <a href="{% url 'initiate_order' %}" class="btn btn-success">
+              <i class="bi bi-plus-circle me-2"></i>New Order
+            </a>
+            <a href="{% url 'process_sale' %}" class="btn btn-outline-primary">
+              <i class="bi bi-calculator me-2"></i>Legacy POS
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="bi bi-shop fs-1 text-muted mb-3"></i>
+          <h4>No Store Assignment</h4>
+          <p class="text-muted">You need to be assigned to a store before you can access cashier functions.</p>
+          <p class="text-muted">Please contact your store manager or system administrator.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

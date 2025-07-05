@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+{% block title %}New Order - {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">New Order</h2>
+          <p class="text-muted mb-0">Store: {{ store.name }} | Cashier: {{ request.user.first_name }}</p>
+        </div>
+        <div>
+          <a href="{% url 'cashier_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Product Selection -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Select Products</h5>
+        </div>
+        <div class="card-body">
+          <!-- Search Bar -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" id="productSearch" placeholder="Search products...">
+            </div>
+          </div>
+
+          <!-- Product Grid -->
+          <div class="row" id="productGrid">
+            {% for product in available_products %}
+            <div class="col-md-6 col-lg-4 mb-3 product-item" data-name="{{ product.product__name|lower }}">
+              <div class="card h-100 product-card" style="cursor: pointer;" 
+                   data-product-id="{{ product.product__id }}"
+                   data-product-name="{{ product.product__name }}"
+                   data-price="{{ product.selling_price }}"
+                   data-stock="{{ product.quantity }}">
+                <div class="card-body text-center">
+                  <div class="mb-2">
+                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                  </div>
+                  <h6 class="card-title">{{ product.product__name }}</h6>
+                  <p class="card-text">
+                    <strong class="text-success">${{ product.selling_price }}</strong><br>
+                    <small class="text-muted">Stock: {{ product.quantity }}</small>
+                  </p>
+                  <button class="btn btn-primary btn-sm add-to-cart-btn">
+                    <i class="bi bi-plus-circle me-1"></i>Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+              <div class="text-center py-4">
+                <i class="bi bi-box fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No products available in stock</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping Cart -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top: 20px;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Shopping Cart</h5>
+          <button class="btn btn-sm btn-outline-danger" id="clearCart">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="cartItems">
+            <!-- Cart items will be populated here -->
+          </div>
+          
+          <hr>
+          
+          <!-- Order Summary -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Subtotal:</span>
+              <span id="subtotal">$0.00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Discount:</span>
+              <span id="discountAmount">$0.00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Tax:</span>
+              <span id="taxAmount">$0.00</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between fw-bold">
+              <span>Total:</span>
+              <span id="totalAmount">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Order Options -->
+          <div class="mb-3">
+            <label for="customerName" class="form-label">Customer Name</label>
+            <input type="text" class="form-control" id="customerName" placeholder="Walk-in Customer">
+          </div>
+
+          <div class="mb-3">
+            <label for="customerPhone" class="form-label">Customer Phone (Optional)</label>
+            <input type="tel" class="form-control" id="customerPhone" placeholder="+1 (555) 123-4567">
+          </div>
+
+          <div class="mb-3">
+            <label for="discountPercent" class="form-label">Discount (%)</label>
+            <input type="number" class="form-control" id="discountPercent" min="0" max="100" value="0">
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="taxable">
+              <label class="form-check-label" for="taxable">
+                Apply Tax (5%)
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="paymentType" class="form-label">Payment Method</label>
+            <select class="form-select" id="paymentType">
+              <option value="cash">Cash</option>
+              <option value="mobile">Mobile Banking</option>
+              <option value="bank">Bank Transfer</option>
+            </select>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-grid gap-2">
+            <button class="btn btn-success" id="completeOrder" disabled>
+              <i class="bi bi-check-circle me-2"></i>Complete Order
+            </button>
+            <button class="btn btn-outline-secondary" id="saveForLater">
+              <i class="bi bi-bookmark me-2"></i>Save for Later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>Order Completed Successfully!
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <i class="bi bi-receipt fs-1 text-success"></i>
+          <h4 class="mt-2">Receipt #<span id="receiptNumber"></span></h4>
+          <p class="text-muted">Total: $<span id="orderTotal"></span></p>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border-primary">
+              <div class="card-body text-center">
+                <i class="bi bi-download fs-2 text-primary"></i>
+                <h6 class="mt-2">Download Receipt</h6>
+                <p class="small text-muted">Get a PDF copy of the receipt</p>
+                <button class="btn btn-primary" id="downloadReceiptBtn">
+                  <i class="bi bi-download me-2"></i>Download PDF
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-info">
+              <div class="card-body text-center">
+                <i class="bi bi-envelope fs-2 text-info"></i>
+                <h6 class="mt-2">Email Receipt</h6>
+                <p class="small text-muted">Send receipt to customer's email</p>
+                <button class="btn btn-info" id="emailReceiptBtn">
+                  <i class="bi bi-envelope me-2"></i>Email Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" id="newOrderBtn">
+          <i class="bi bi-plus-circle me-2"></i>New Order
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Receipt Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-envelope me-2"></i>Email Receipt
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="customerEmail" class="form-label">Customer Email Address</label>
+          <input type="email" class="form-control" id="customerEmail" placeholder="customer@example.com" required>
+          <div class="form-text">Enter the customer's email address to send the receipt</div>
+        </div>
+        <div id="emailStatus" class="alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="sendEmailBtn">
+          <i class="bi bi-send me-2"></i>Send Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quantity Modal -->
+<div class="modal fade" id="quantityModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Quantity</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="quantityInput" class="form-label">Quantity</label>
+          <input type="number" class="form-control" id="quantityInput" min="1" value="1">
+          <small class="text-muted">Available: <span id="availableStock"></span></small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmAddToCart">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.cart-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+</style>
+
+<script>
+// Cart management
+let cart = {{ cart|default:"{'items': [], 'total': 0}"|safe }};
+let selectedProduct = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartDisplay();
+    attachEventListeners();
+});
+
+// Product search
+document.getElementById('productSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const productItems = document.querySelectorAll('.product-item');
+    
+    productItems.forEach(item => {
+        const productName = item.dataset.name;
+        if (productName.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Add to cart functionality
+function attachEventListeners() {
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('.product-card');
+            selectedProduct = {
+                id: card.dataset.productId,
+                name: card.dataset.productName,
+                price: parseFloat(card.dataset.price),
+                stock: parseInt(card.dataset.stock)
+            };
+            
+            document.getElementById('availableStock').textContent = selectedProduct.stock;
+            document.getElementById('quantityInput').max = selectedProduct.stock;
+            document.getElementById('quantityInput').value = 1;
+            
+            new bootstrap.Modal(document.getElementById('quantityModal')).show();
+        });
+    });
+}
+
+// Confirm add to cart
+document.getElementById('confirmAddToCart').addEventListener('click', function() {
+    const quantity = parseInt(document.getElementById('quantityInput').value);
+    
+    if (quantity > selectedProduct.stock) {
+        alert('Quantity exceeds available stock');
+        return;
+    }
+    
+    addToCart(selectedProduct.id, quantity);
+    bootstrap.Modal.getInstance(document.getElementById('quantityModal')).hide();
+});
+
+// Add to cart API call
+function addToCart(productId, quantity) {
+    fetch('{% url "add_to_cart" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: quantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            cart = data.cart;
+            updateCartDisplay();
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error adding to cart', 'error');
+    });
+}
+
+// Update cart display
+function updateCartDisplay() {
+    const cartItems = document.getElementById('cartItems');
+    cartItems.innerHTML = '';
+    
+    if (cart.items && cart.items.length > 0) {
+        cart.items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+            itemDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">${item.product_name}</h6>
+                        <small class="text-muted">$${item.price} x ${item.quantity}</small>
+                    </div>
+                    <div class="text-end">
+                        <div>$${item.subtotal.toFixed(2)}</div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.product_id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            cartItems.appendChild(itemDiv);
+        });
+        
+        document.getElementById('completeOrder').disabled = false;
+    } else {
+        cartItems.innerHTML = '<p class="text-muted text-center">Cart is empty</p>';
+        document.getElementById('completeOrder').disabled = true;
+    }
+    
+    updateTotals();
+}
+
+// Update totals
+function updateTotals() {
+    const subtotal = cart.total || 0;
+    const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+    const discountAmount = subtotal * (discountPercent / 100);
+    const taxableAmount = subtotal - discountAmount;
+    const taxAmount = document.getElementById('taxable').checked ? taxableAmount * 0.05 : 0;
+    const total = taxableAmount + taxAmount;
+    
+    document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('discountAmount').textContent = `$${discountAmount.toFixed(2)}`;
+    document.getElementById('taxAmount').textContent = `$${taxAmount.toFixed(2)}`;
+    document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+}
+
+// Event listeners for total updates
+document.getElementById('discountPercent').addEventListener('input', updateTotals);
+document.getElementById('taxable').addEventListener('change', updateTotals);
+
+// Remove from cart
+function removeFromCart(productId) {
+    fetch('{% url "remove_from_cart" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            product_id: productId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            cart = data.cart;
+            updateCartDisplay();
+            showToast(data.message, 'success');
+        }
+    });
+}
+
+// Complete order
+document.getElementById('completeOrder').addEventListener('click', function() {
+    const orderData = {
+        customer_name: document.getElementById('customerName').value || 'Walk-in Customer',
+        customer_phone: document.getElementById('customerPhone').value || '',
+        discount: parseFloat(document.getElementById('discountPercent').value) || 0,
+        taxable: document.getElementById('taxable').checked,
+        payment_type: document.getElementById('paymentType').value
+    };
+
+    fetch('{% url "complete_order" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success modal with receipt actions
+            showOrderSuccessModal(data);
+        } else {
+            showToast(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error completing order', 'error');
+    });
+});
+
+// Show order success modal
+function showOrderSuccessModal(orderData) {
+    document.getElementById('receiptNumber').textContent = orderData.receipt_id;
+    document.getElementById('orderTotal').textContent = orderData.total_amount.toFixed(2);
+
+    // Store receipt data for actions
+    window.currentReceipt = {
+        id: orderData.receipt_id,
+        pdfUrl: orderData.receipt_pdf_url,
+        viewUrl: orderData.receipt_url
+    };
+
+    // Clear cart display
+    cart = {items: [], total: 0};
+    updateCartDisplay();
+
+    // Show modal
+    new bootstrap.Modal(document.getElementById('orderSuccessModal')).show();
+}
+
+// Download receipt
+document.getElementById('downloadReceiptBtn').addEventListener('click', function() {
+    if (window.currentReceipt) {
+        window.open(window.currentReceipt.pdfUrl, '_blank');
+    }
+});
+
+// Email receipt
+document.getElementById('emailReceiptBtn').addEventListener('click', function() {
+    new bootstrap.Modal(document.getElementById('emailModal')).show();
+});
+
+// Send email
+document.getElementById('sendEmailBtn').addEventListener('click', function() {
+    const email = document.getElementById('customerEmail').value.trim();
+    const statusDiv = document.getElementById('emailStatus');
+
+    if (!email) {
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.textContent = 'Please enter an email address';
+        statusDiv.style.display = 'block';
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.textContent = 'Please enter a valid email address';
+        statusDiv.style.display = 'block';
+        return;
+    }
+
+    // Show loading
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+    statusDiv.style.display = 'none';
+
+    fetch(`/stores/receipt/${window.currentReceipt.id}/email/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.className = 'alert alert-success';
+            statusDiv.textContent = data.message;
+            statusDiv.style.display = 'block';
+            document.getElementById('customerEmail').value = '';
+
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('emailModal')).hide();
+            }, 2000);
+        } else {
+            statusDiv.className = 'alert alert-danger';
+            statusDiv.textContent = data.error;
+            statusDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.textContent = 'Failed to send email. Please try again.';
+        statusDiv.style.display = 'block';
+    })
+    .finally(() => {
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-send me-2"></i>Send Receipt';
+    });
+});
+
+// New order button
+document.getElementById('newOrderBtn').addEventListener('click', function() {
+    bootstrap.Modal.getInstance(document.getElementById('orderSuccessModal')).hide();
+    // Reset form
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.getElementById('discountPercent').value = '0';
+    document.getElementById('taxable').checked = false;
+    document.getElementById('paymentType').value = 'cash';
+    updateTotals();
+});
+
+// Clear cart
+document.getElementById('clearCart').addEventListener('click', function() {
+    if (confirm('Are you sure you want to clear the cart?')) {
+        cart = {items: [], total: 0};
+        updateCartDisplay();
+    }
+});
+
+// Utility functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}
