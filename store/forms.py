@@ -23,7 +23,7 @@ class AssignManagerForm(forms.Form):
         # Further refine queryset if needed, e.g., only verified users
         self.fields['manager'].queryset = CustomUser.objects.filter(
             is_active=True,
-        ).exclude(role__in=['store_owner', 'admin'])
+        ).exclude(role__in=['head_manager', 'admin'])
 
 from django import forms
 from users.models import CustomUser

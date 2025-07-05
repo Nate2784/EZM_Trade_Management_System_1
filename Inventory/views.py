@@ -12,12 +12,12 @@ from .forms import ProductForm, StockCreateForm, StockUpdateForm
 class StoreOwnerMixin(UserPassesTestMixin):
     """Limits access to Store Owners only."""
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.role == 'store_owner'
+        return self.request.user.is_authenticated and self.request.user.role == 'head_manager'
 
 class ManagerAndOwnerMixin(UserPassesTestMixin):
     """Limits access to Store Owners and Store Managers."""
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.role in ['store_owner', 'store_manager']
+        return self.request.user.is_authenticated and self.request.user.role in ['head_manager', 'store_manager']
 
 class ManagerOnlyMixin(UserPassesTestMixin):
     """Limits access to Store Managers only."""
@@ -31,7 +31,7 @@ class ObjectManagerRequiredMixin(UserPassesTestMixin):
     """
     def test_func(self):
         user = self.request.user
-        if user.role == 'store_owner':
+        if user.role == 'head_manager':
             return True  # Store owner can edit any stock
         
         obj = self.get_object() # Gets the Stock instance
@@ -81,7 +81,7 @@ class StockListView(LoginRequiredMixin, ListView):
         """
         user = self.request.user
         
-        if user.role == 'store_owner':
+        if user.role == 'head_manager':
             return Stock.objects.all().select_related('product', 'store')
         
         elif user.role == 'store_manager':

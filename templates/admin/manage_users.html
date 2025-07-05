@@ -1,3 +1,4 @@
+<!-- This is the manage_users.html template -->
 {% extends 'base.html' %}
 {% block title %}Manage Users{% endblock %}
 {% block content %}
@@ -19,7 +20,7 @@
           <select name="role" class="form-select">
             <option value="">All Roles</option>
             <option value="admin" {% if is_admin %}selected{% endif %}>Admin</option>
-            <option value="store_owner" {% if is_store_owner %}selected{% endif %}>Store Owner</option>
+            <option value="head_manager" {% if is_head_manager %}selected{% endif %}>Head Manager</option>
             <option value="store_manager" {% if is_store_manager %}selected{% endif %}>Store Manager</option>
             <option value="cashier" {% if is_cashier %}selected{% endif %}>Cashier</option>
           </select>
@@ -95,11 +96,11 @@
 
             {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            <li class="page-item active"><span class="page-link">{{num}}</span></li>
             {% else %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ num }}&search={{ request.GET.search }}&role={{ request.GET.role }}">{{
-                num }}</a>
+              <a class="page-link" href="?page={{ num }}&search={{ request.GET.search }}&role={{ request.GET.role }}">
+                {{num }}</a>
             </li>
             {% endif %}
             {% endfor %}

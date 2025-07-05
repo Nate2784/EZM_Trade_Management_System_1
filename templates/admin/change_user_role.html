@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load users_utils %}
 {% block title %}Change User Role{% endblock %}
 {% block content %}
 <div class="container mt-5">
@@ -7,12 +8,36 @@
     <form method="POST">
       {% csrf_token %}
       <div class="mb-3">
-        {{ form.role.label_tag }}
-        {{ form.role }}
+        <label for="{{ form.role.id_for_label }}" id="id_role">{{ form.role.label }}</label>
+        {{ form.role|add_class:"form-control" }}
+      </div>
+      <div class="mb-3" id="store-field" style="display: none;">
+        {{ form.store.label_tag }}
+        {{ form.store|add_class:"form-control" }}
       </div>
       <button type="submit" class="btn btn-primary w-100">Update Role</button>
       <a href="{% url 'manage_users' %}" class="btn btn-secondary w-100 mt-2">Cancel</a>
     </form>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const roleSelect = document.getElementById('id_role');
+      const storeDiv = document.getElementById('store-field'); // Target the store div
+
+      function toggleStoreVisibility() {
+        if (roleSelect.value === 'store_manager') {
+          storeDiv.style.display = 'block';
+        } else {
+          storeDiv.style.display = 'none';
+        }
+      }
+
+      // Initial visibility setup
+      toggleStoreVisibility();
+
+      // Change event listener
+      roleSelect.addEventListener('change', toggleStoreVisibility);
+    });
+  </script>
 </div>
 {% endblock %}
