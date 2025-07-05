@@ -1,0 +1,134 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <a class="navbar-brand" href="{% url 'login' %}">Inventory Pro</a>
+    </div>
+
+    <div class="sidebar-menu">
+        <ul>
+            <li class="sidebar-menu-item">
+                <a href="{% url 'store_manager_page' %}">
+                    <i class="bi bi-house-door"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{% url 'store_product_list' %}">
+                    <i class="bi bi-box-seam-fill"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Stock</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="sidebar-footer">
+        <ul>
+            <li class="sidebar-menu-item">
+                <a href="#">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Log out</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<style>
+    .sidebar {
+        background-color: #1e293b;
+        color: #fff;
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .sidebar-header {
+        margin-bottom: 20px;
+    }
+
+    .sidebar-header .navbar-brand {
+        color: #fff !important;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .sidebar-search {
+        margin-bottom: 20px;
+    }
+
+    .sidebar-search input {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #334155;
+        color: #fff;
+    }
+
+    .sidebar-menu ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-menu li {
+        margin-bottom: 10px;
+    }
+
+    .sidebar-menu a {
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .sidebar-menu a:hover {
+        background-color: #334155;
+    }
+
+    .sidebar-menu i {
+        margin-right: 10px;
+    }
+
+    .sidebar-footer ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-footer li {
+        margin-bottom: 10px;
+    }
+
+    .sidebar-footer a {
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .sidebar-footer a:hover {
+        background-color: #334155;
+    }
+
+    .sidebar-footer i {
+        margin-right: 10px;
+    }
+</style>

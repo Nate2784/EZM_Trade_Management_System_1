@@ -54,6 +54,8 @@ from django.contrib.auth import login
 from .forms import CustomLoginForm
 from store.models import Store
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -178,11 +180,12 @@ def admin_dashboard(request):
 @login_required
 def head_manager_page(request):
     if request.user.role != 'head_manager':
-        return redirect('')
+        messages.warning(request, "Access denied. You don't have permission to access this page.")
+        return redirect('login')
 
     stores = Store.objects.all().select_related('store_manager')
 
-    return render(request, 'mainpages/store_owner_page.html', {
+    return render(request, 'mainpages/head_manager_page.html', {
         'stores': stores
     })
 
@@ -402,6 +405,12 @@ def admin_change_password(request):
 
 @login_required
 def head_manager_settings(request):
+    # Mark user as no longer first login after visiting settings
+    if request.user.is_first_login:
+        request.user.is_first_login = False
+        request.user.save()
+        messages.info(request, "Welcome! Please update your password and profile information.")
+
     return render(request, 'mainpages/head_manager_settings.html')
 
 @login_required
@@ -411,3 +420,28 @@ def store_manager_settings(request):
 @login_required
 def cashier_settings(request):
     return render(request, 'mainpages/cashier_settings.html')
+
+
+class CustomPasswordChangeView(PasswordChangeView):
+    """
+    Custom Password Change View that redirects users to their appropriate dashboard
+    based on their role after successful password change.
+    """
+    template_name = 'users/password_change.html'
+
+    def get_success_url(self):
+        """
+        Redirect to the appropriate dashboard based on user role
+        """
+        user = self.request.user
+        if user.is_superuser or user.role == 'admin':
+            return reverse_lazy('admin_dashboard')
+        elif user.role == 'head_manager':
+            return reverse_lazy('head_manager_page')
+        elif user.role == 'store_manager':
+            return reverse_lazy('store_manager_page')
+        elif user.role == 'cashier':
+            return reverse_lazy('cashier_page')
+        else:
+            # Default fallback
+            return reverse_lazy('login')

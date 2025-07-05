@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Products</h1>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search products..." name="search"
+                        value="{{ search_term }}">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in product_data %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.product.category }}</td>
+                <td>{{ item.product.price }}</td>
+                <td>{{ item.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

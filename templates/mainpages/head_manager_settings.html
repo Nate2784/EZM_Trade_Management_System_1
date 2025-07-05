@@ -1,7 +1,73 @@
 {% extends 'base.html' %}
 {% block title %}Head Manager Settings{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Head Manager Settings</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-4 border-0">
+                <div class="card-header" style="background-color: #001f4d; color: white;">
+                    <h3 class="mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>
+                        Head Manager Settings
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- Profile Settings -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-person-circle fs-1 text-primary mb-3"></i>
+                                    <h5 class="card-title">Profile Settings</h5>
+                                    <p class="card-text text-muted">Update your personal information and account details
+                                    </p>
+                                    <a href="#" class="btn btn-outline-primary">Edit Profile</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Change -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-shield-lock fs-1 text-warning mb-3"></i>
+                                    <h5 class="card-title">Change Password</h5>
+                                    <p class="card-text text-muted">Update your password for better security</p>
+                                    <a href="{% url 'password_change' %}" class="btn btn-outline-warning">Change
+                                        Password</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Quick Actions -->
+                    <div class="text-center">
+                        <h5 class="mb-3">Quick Actions</h5>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="{% url 'head_manager_page' %}" class="btn btn-primary">
+                                <i class="bi bi-house-door"></i> Dashboard
+                            </a>
+                            <a href="{% url 'create_store' %}" class="btn btn-success">
+                                <i class="bi bi-shop-window"></i> Create Store
+                            </a>
+                            <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if user.is_first_login %}
+                    <div class="alert alert-info mt-4">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Welcome!</strong> This is your first login. Please update your password and profile
+                        information.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

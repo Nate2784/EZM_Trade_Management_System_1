@@ -1,6 +1,13 @@
 # users/urls.py
 from django.urls import path
-from .views import login_view, logout_view, admin_dashboard, store_manager_page, cashier_page, head_manager_page, manage_users, toggle_user_status, change_user_role, view_user_detail, create_user, admin_settings, admin_edit_profile, admin_change_password, head_manager_settings, store_manager_settings, cashier_settings
+from django.contrib.auth.views import (
+    PasswordChangeView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
+from .views import login_view, logout_view, admin_dashboard, store_manager_page, cashier_page, head_manager_page, manage_users, toggle_user_status, change_user_role, view_user_detail, create_user, admin_settings, admin_edit_profile, admin_change_password, head_manager_settings, store_manager_settings, cashier_settings, CustomPasswordChangeView
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -25,4 +32,28 @@ urlpatterns = [
     path('head-manager/settings/', head_manager_settings, name='head_manager_settings'),
     path('store-manager/settings/', store_manager_settings, name='store_manager_settings'),
     path('cashier/settings/', cashier_settings, name='cashier_settings'),
+
+    # Generic password change for all authenticated users
+    path('account/password/', CustomPasswordChangeView.as_view(), name='password_change'),
+
+    # Password reset URLs
+    path('password-reset/', PasswordResetView.as_view(
+        template_name='users/password_reset.html',
+        email_template_name='users/password_reset_email.html',
+        subject_template_name='users/password_reset_subject.txt',
+        success_url='/users/password-reset/done/'
+    ), name='password_reset'),
+
+    path('password-reset/done/', PasswordResetDoneView.as_view(
+        template_name='users/password_reset_done.html'
+    ), name='password_reset_done'),
+
+    path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(
+        template_name='users/password_reset_confirm.html',
+        success_url='/users/password-reset-complete/'
+    ), name='password_reset_confirm'),
+
+    path('password-reset-complete/', PasswordResetCompleteView.as_view(
+        template_name='users/password_reset_complete.html'
+    ), name='password_reset_complete'),
 ]

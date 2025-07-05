@@ -43,14 +43,15 @@
                         <tr>
                             <td>{{ forloop.counter }}</td>
                             <td class="fw-semibold text-primary">{{ store.name }}</td>
-                            <td>{{ store.location }}</td>
+                            <td>{{ store.address }}</td>
                             <td>
-                                {% if store.manager_assignment and store.manager_assignment.is_active %}
-                                <span class="badge bg-success">{{ store.manager_assignment.manager.get_full_name
-                                    }}</span>
-                                {% elif store.manager_assignment %}
-                                <span class="badge bg-warning text-dark">{{
-                                    store.manager_assignment.manager.get_full_name }} (Inactive)</span>
+                                {% if store.store_manager %}
+                                {% if store.store_manager.is_active %}
+                                <span class="badge bg-success">{{ store.store_manager.get_full_name }}</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">{{ store.store_manager.get_full_name }}
+                                    (Inactive)</span>
+                                {% endif %}
                                 {% else %}
                                 <span class="text-muted">No Manager Assigned</span>
                                 {% endif %}
