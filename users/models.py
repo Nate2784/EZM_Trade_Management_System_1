@@ -12,5 +12,4 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     store = models.ForeignKey('store.Store', on_delete=models.SET_NULL, null=True, blank=True) # Add this line
     is_first_login = models.BooleanField(default=True)
-    full_name = models.CharField(max_length=100, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)

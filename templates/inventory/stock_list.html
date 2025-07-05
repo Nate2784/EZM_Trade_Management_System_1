@@ -34,10 +34,10 @@
             <td>{{ stock.store.name }}</td>
             <td>{{ stock.quantity }}</td>
             <td>
-                {% if request.user.role == 'store_owner' or stock.store.manager == request.user %}
+                {% if request.user.role == 'head_manager' or stock.store.manager == request.user %}
                 <a href="{% url 'stock_update' stock.pk %}" class="btn btn-secondary btn-sm">Update</a>
                 {% endif %}
-                {% if request.user.role == 'store_owner' %}
+                {% if request.user.role == 'head_manager' %}
                 <a href="{% url 'stock_delete' stock.pk %}" class="btn btn-danger btn-sm">Delete</a>
                 {% endif %}
             </td>

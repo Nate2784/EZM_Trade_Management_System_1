@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Head Manager Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Quick Action Card -->
+    <div class="row justify-content-center mb-5 gx-4">
+        <div class="col-md-6">
+            <a href="{% url 'create_store' %}" class="text-decoration-none text-reset d-block">
+                <div class="card shadow-sm rounded-4 border-0 hover-shadow transition">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-shop-window fs-1 text-primary mb-3"></i>
+                        <h4 class="card-title fw-bold mb-2">Create New Store</h4>
+                        <p class="card-text text-muted">Add a new store to your portfolio to start managing.</p>
+                        <button class="btn btn-primary mt-3" disabled>Create Store</button>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stores Summary Table -->
+    <div class="card shadow-sm rounded-4 border-0">
+        <div class="card-header" style="background-color: #001f4d; color: white; font-weight: 600;">
+            Your Stores
+        </div>
+        <div class="card-body p-0">
+            {% if stores %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center mb-0">
+                    <thead class="table-light" style="background-color: #001f4d; color: white;">
+                        <tr>
+                            <th>#</th>
+                            <th>Store Name</th>
+                            <th>Location</th>
+                            <th>Manager</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for store in stores %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold text-primary">{{ store.name }}</td>
+                            <td>{{ store.location }}</td>
+                            <td>
+                                {% if store.manager_assignment and store.manager_assignment.is_active %}
+                                <span class="badge bg-success">{{ store.manager_assignment.manager.get_full_name
+                                    }}</span>
+                                {% elif store.manager_assignment %}
+                                <span class="badge bg-warning text-dark">{{
+                                    store.manager_assignment.manager.get_full_name }} (Inactive)</span>
+                                {% else %}
+                                <span class="text-muted">No Manager Assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Active</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'manage_store' store.id %}"
+                                    class="btn btn-sm btn-outline-primary">Manage</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-4">You have not added any stores yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 0 1.5rem rgba(0, 123, 255, 0.3);
+        transform: translateY(-5px);
+        transition: all 0.3s ease;
+    }
+
+    button {
+        pointer-events: none;
+    }
+</style>
+{% endblock %}

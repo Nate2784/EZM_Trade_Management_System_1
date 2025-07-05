@@ -121,6 +121,7 @@ def create_store(request):
         if form.is_valid():
             store = form.save()
             return redirect('head_manager_page')  # Redirect to haed manager page after successful creation
+
     else:
         form = StoreForm()
     return render(request, 'store/create_store.html', {'form': form})
@@ -148,7 +149,7 @@ def manage_store(request, store_id):
             logger.info(f"Successfully assigned manager {manager.username} to store {store.name}")
             from django.contrib import messages
             messages.success(request, f"Successfully assigned {manager.username} to {store.name}")
-            return redirect('store_owner_page')
+            return redirect('head_manager_page')
         else:
             logger.warning(f"Invalid form data: {form.errors}")
     else:

@@ -33,6 +33,7 @@ class ObjectManagerRequiredMixin(UserPassesTestMixin):
         user = self.request.user
         if user.role == 'head_manager':
             return True  # Head manager can edit any stock
+
         
         obj = self.get_object() # Gets the Stock instance
         
